@@ -29,9 +29,9 @@ class OnrabSpider(scrapy.Spider):
         page_hash.update(response.url.encode())
 
         for item in response.css("::text").getall():
-            page_hash.update(item.encode())
             for word in WORDS:
                 if word in item.lower():
+                    page_hash.update(item.encode())
                     count[word] += 1
 
         page_hash = str(page_hash.hexdigest())
