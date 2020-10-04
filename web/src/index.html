@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <title>Dolus</title>
+  </head>
+  <body>
+    SUP?
+    <ul>
+      {{#each (crawled)}}
+      <li>
+        <h2>url: {{url}} <br /></h2>
+        page_hash: {{page_hash}} <br />
+        created: {{created}} <br />
+        <ul>
+          <li>orbán:{{counts.orbán}}</li>
+          <li>baloldal: {{counts.baloldal}}</li>
+          <li>fidesz: {{counts.fidesz}}</li>
+          <li>gyurcsány: {{counts.gyurcsány}}</li>
+          <li>migráns: {{counts.migráns}}</li>
+        </ul>
+      </li>
+      {{/each}}
+    </ul>
+  </body>
+</html>

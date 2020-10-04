@@ -10,9 +10,22 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:admin@postgres:5432
 
+  web:
+    build:
+      context: ./web
+      dockerfile: dockerfile
+    depends_on:
+      - postgres
+      - release
+    environment:
+      DATABASE_URL: postgres://postgres:admin@postgres:5432
+      RUST_LOG: info,dolus=debug
+    ports:
+      - "8000:8000"
+
   release:
     build:
-      context: .
+      context: ./web
       dockerfile: dockerfile-release
     depends_on:
       - postgres

@@ -1,9 +1,23 @@
 [package]
-name = "dolus-web"
+name = "dolus"
 version = "0.1.0"
 authors = ["Daniel Kiss <littlesnorrboy@gmail.com>"]
 edition = "2018"
 
+[[bin]]
+name = "dolus"
+path = "src/main.rs"
+
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tokio = { version = "0.2", features = ["full"] }
+warp = "0.2"
+handlebars = "3.5"
+serde_json = "*"
+sqlx = { version = "0.4.0-beta.1", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "json", "time", "chrono" ] }
+serde = { version="1", features=["derive"] }
+chrono = {version="*", features=["serde"] }
+log = { version="0.4", features=["release_max_level_info"] }
+pretty_env_logger = "0.4"

@@ -26,6 +26,8 @@ class OnrabSpider(scrapy.Spider):
 
         page_hash = hashlib.sha256()
 
+        page_hash.update(response.url.encode())
+
         for item in response.css("::text").getall():
             page_hash.update(item.encode())
             for word in WORDS:
@@ -43,9 +45,10 @@ class OnrabSpider(scrapy.Spider):
             """
             INSERT INTO crawled(counts, page_hash, url)
             VALUES (%s, %s, %s)
-            ON CONFLICT DO NOTHING
+            ON CONFLICT (page_hash) DO NOTHING
             """,
             (Json(count), page_hash, response.url),
         )
+        self.conn.commit()
 
         return il.load_item()
