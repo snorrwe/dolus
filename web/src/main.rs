@@ -95,10 +95,12 @@ async fn main() {
         .and(db_pool())
         .and_then(counts);
 
-    let filters = counts.or(index);
-
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_owned());
     let port = port.parse().unwrap();
+
+    let cors = warp::cors().allow_any_origin().allow_methods(vec!["GET"]);
+
+    let filters = counts.or(index).with(cors);
 
     warp::serve(filters).run(([0, 0, 0, 0], port)).await;
 }

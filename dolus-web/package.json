@@ -1,0 +1,17 @@
+{
+  "name": "dolus-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "9.5.3",
+    "performance-now": "^2.1.0",
+    "react": "16.13.1",
+    "react-charts": "^2.0.0-beta.7",
+    "react-dom": "16.13.1"
+  }
+}
