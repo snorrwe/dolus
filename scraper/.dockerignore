@@ -2,4 +2,6 @@
 !onrab/
 !scrapy.cfg
 !requirements.txt
+!run.sh
 **/__pycache__
+

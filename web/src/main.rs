@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use handlebars::Handlebars;
-use log::info;
+use log::debug;
 use serde::Serialize;
 use sqlx::postgres::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -24,19 +24,19 @@ async fn index(hbs: Arc<Handlebars<'_>>, db: PgPool) -> Result<impl warp::Reply,
         r#"
         SELECT created, counts, page_hash, url
         FROM crawled
-        ORDER BY created ASC
+        ORDER BY url,created DESC
         "#
     )
     .fetch_all(&db)
     .await
     .unwrap();
 
-    info!("values from db: {:#?}", values);
+    debug!("values from db: {:#?}", values);
 
     let mut hb_values = HashMap::new();
     hb_values.insert("crawled", values);
 
-    info!("values: {:#?}", hb_values);
+    debug!("values: {:#?}", hb_values);
 
     let render = hbs.render("index.html", &hb_values).unwrap();
 

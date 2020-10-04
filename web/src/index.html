@@ -3,22 +3,33 @@
     <title>Dolus</title>
   </head>
   <body>
-    SUP?
-    <ul>
-      {{#each (crawled)}}
-      <li>
-        <h2>url: {{url}} <br /></h2>
-        page_hash: {{page_hash}} <br />
-        created: {{created}} <br />
-        <ul>
-          <li>orbán:{{counts.orbán}}</li>
-          <li>baloldal: {{counts.baloldal}}</li>
-          <li>fidesz: {{counts.fidesz}}</li>
-          <li>gyurcsány: {{counts.gyurcsány}}</li>
-          <li>migráns: {{counts.migráns}}</li>
-        </ul>
-      </li>
-      {{/each}}
-    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>url</th>
+          <th>orbán</th>
+          <th>baloldal</th>
+          <th>fidesz</th>
+          <th>gyurcsány</th>
+          <th>migráns</th>
+          <th>created</th>
+          <th>page_hash</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each (crawled)}}
+        <tr>
+          <td>{{url}}</td>
+          <td>{{counts.orbán}}</td>
+          <td>{{counts.baloldal}}</td>
+          <td>{{counts.fidesz}}</td>
+          <td>{{counts.gyurcsány}}</td>
+          <td>{{counts.migráns}}</td>
+          <td>{{created}}</td>
+          <td>{{page_hash}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
   </body>
 </html>
