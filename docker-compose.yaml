@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+  scraper:
+    build:
+      context: ./scraper
+      dockerfile: dockerfile
+    depends_on:
+      - postgres
+      - release
+    environment:
+      DATABASE_URL: postgres://postgres:admin@postgres:5432
+
+  release:
+    build:
+      context: .
+      dockerfile: dockerfile-release
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://postgres:admin@postgres:5432
+
+  postgres:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"

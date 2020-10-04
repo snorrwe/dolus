@@ -1,0 +1,15 @@
+FROM rust:latest AS build
+
+WORKDIR /dolus
+RUN cargo install diesel_cli --root . --no-default-features --features="postgres"
+# ---------- Copy the built binary to a scratch container, to minimize the image size ----------
+
+FROM ubuntu:20.04
+WORKDIR /dolus
+RUN apt-get update
+RUN apt-get install libpq-dev -y
+
+COPY ./migrations/ ./migrations/
+COPY --from=build /dolus/bin/ ./
+
+ENTRYPOINT [ "./diesel" ,"migration" ,"run"]

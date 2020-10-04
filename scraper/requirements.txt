@@ -1,1 +1,2 @@
 scrapy
+psycopg2==2.8
