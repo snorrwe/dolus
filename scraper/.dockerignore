@@ -1,0 +1,5 @@
+*
+!onrab/
+!scrapy.cfg
+!requirements.txt
+**/__pycache__
