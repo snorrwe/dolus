@@ -18,7 +18,10 @@ struct Crawled {
     url: String,
 }
 
-async fn index(hbs: Arc<Handlebars<'_>>, db: PgPool) -> Result<impl warp::Reply, warp::Rejection> {
+async fn index(
+    hbs: Arc<Handlebars<'_>>,
+    db: PgPool,
+) -> Result<impl warp::Reply, std::convert::Infallible> {
     let values = sqlx::query_as!(
         Crawled,
         r#"
@@ -41,6 +44,24 @@ async fn index(hbs: Arc<Handlebars<'_>>, db: PgPool) -> Result<impl warp::Reply,
     let render = hbs.render("index.html", &hb_values).unwrap();
 
     Ok(warp::reply::html(render))
+}
+
+async fn counts(db: PgPool) -> Result<impl warp::Reply, std::convert::Infallible> {
+    let values = sqlx::query_as!(
+        Crawled,
+        r#"
+        SELECT created, counts, page_hash, url
+        FROM crawled
+        ORDER BY url,created DESC
+        "#
+    )
+    .fetch_all(&db)
+    .await
+    .unwrap();
+
+    debug!("values from db: {:#?}", values);
+
+    Ok(warp::reply::json(&values))
 }
 
 #[tokio::main]
@@ -72,7 +93,13 @@ async fn main() {
         move || filter.clone()
     };
 
-    let route = warp::get().and(hb()).and(db_pool()).and_then(index);
+    let index = warp::get().and(hb()).and(db_pool()).and_then(index);
+    let counts = warp::get()
+        .and(warp::path!("api" / "counts"))
+        .and(db_pool())
+        .and_then(counts);
 
-    warp::serve(route).run(([0, 0, 0, 0], 8000)).await;
+    let filters = counts.or(index);
+
+    warp::serve(filters).run(([0, 0, 0, 0], 8000)).await;
 }
