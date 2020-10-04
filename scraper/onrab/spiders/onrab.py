@@ -38,9 +38,10 @@ class OnrabSpider(scrapy.Spider):
 
         for item in response.css("::text").getall():
             item = item.lower()
-            word_count.update((w for w in re.split("\s+", item) if len(w) > 3))
+            sentence = re.split("\s+", item)
+            word_count.update((w for w in sentence if len(w) > 3))
             for word in WORDS:
-                if word in item.lower():
+                if word in sentence:
                     page_hash.update(item.encode())
                     count[word] += 1
 
