@@ -1,3 +1,4 @@
+use anyhow::Context;
 use chrono::{DateTime, Utc};
 use handlebars::Handlebars;
 use log::debug;
@@ -14,25 +15,30 @@ const INDEX: &str = include_str!("index.html");
 struct Crawled {
     created: DateTime<Utc>,
     counts: serde_json::Value,
+    top_words: serde_json::Value,
     page_hash: String,
     url: String,
 }
 
-async fn index(
-    hbs: Arc<Handlebars<'_>>,
-    db: PgPool,
-) -> Result<impl warp::Reply, std::convert::Infallible> {
-    let values = sqlx::query_as!(
+async fn get_crawled(db: PgPool) -> anyhow::Result<Vec<Crawled>> {
+    sqlx::query_as!(
         Crawled,
         r#"
-        SELECT created, counts, page_hash, url
+        SELECT created, counts, top_words, page_hash, url
         FROM crawled
         ORDER BY url,created DESC
         "#
     )
     .fetch_all(&db)
     .await
-    .unwrap();
+    .with_context(|| "fetch crawled rows")
+}
+
+async fn index(
+    hbs: Arc<Handlebars<'_>>,
+    db: PgPool,
+) -> Result<impl warp::Reply, std::convert::Infallible> {
+    let values = get_crawled(db).await.unwrap();
 
     debug!("values from db: {:#?}", values);
 
@@ -47,17 +53,7 @@ async fn index(
 }
 
 async fn counts(db: PgPool) -> Result<impl warp::Reply, std::convert::Infallible> {
-    let values = sqlx::query_as!(
-        Crawled,
-        r#"
-        SELECT created, counts, page_hash, url
-        FROM crawled
-        ORDER BY url,created DESC
-        "#
-    )
-    .fetch_all(&db)
-    .await
-    .unwrap();
+    let values = get_crawled(db).await.unwrap();
 
     debug!("values from db: {:#?}", values);
 
@@ -101,7 +97,7 @@ async fn main() {
 
     let filters = counts.or(index);
 
-    let port = std::env::var("PORT").unwrap_or_else(|_|"8000".to_owned());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_owned());
     let port = port.parse().unwrap();
 
     warp::serve(filters).run(([0, 0, 0, 0], port)).await;

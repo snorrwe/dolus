@@ -1,0 +1,2 @@
+DELETE FROM crawled;
+ALTER TABLE crawled ADD COLUMN top_words JSON NOT NULL;

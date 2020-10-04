@@ -8,10 +8,11 @@
 import scrapy
 
 
-WORDS = ["orbán", "baloldal", "fidesz", "gyurcsány", "migráns"]
+WORDS = ["orbán", "baloldal", "fidesz", "gyurcsány", "migráns", "koronavírus", "vírus"]
 
 
 class OnrabItem(scrapy.Item):
     count = scrapy.Field()
+    top_words = scrapy.Field()
     url = scrapy.Field()
     page_hash = scrapy.Field()
