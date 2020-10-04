@@ -101,5 +101,8 @@ async fn main() {
 
     let filters = counts.or(index);
 
-    warp::serve(filters).run(([0, 0, 0, 0], 8000)).await;
+    let port = std::env::var("PORT").unwrap_or_else(|_|"8000".to_owned());
+    let port = port.parse().unwrap();
+
+    warp::serve(filters).run(([0, 0, 0, 0], port)).await;
 }

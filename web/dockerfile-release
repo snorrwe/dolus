@@ -11,5 +11,6 @@ RUN apt-get install libpq-dev -y
 
 COPY ./migrations/ ./migrations/
 COPY --from=build /dolus/bin/ ./
+COPY ./release.sh ./release.sh
 
-ENTRYPOINT [ "./diesel" ,"migration" ,"run"]
+ENTRYPOINT [ "./release.sh" ]
