@@ -46,16 +46,18 @@ class OnrabSpider(scrapy.Spider):
 
         page_hash = str(page_hash.hexdigest())
 
+        top_words = dict(word_count.most_common(20))
+
         il = ItemLoader(item=OnrabItem())
         il.add_value("count", dict(count))
-        il.add_value("top_words", word_count.most_common(20))
+        il.add_value("top_words", top_words)
         il.add_value("url", response.url)
         il.add_value("page_hash", page_hash)
 
         cur.execute(
             """
             INSERT INTO crawled(counts, top_words, page_hash, url)
-            VALUES (%s, %s, %s)
+            VALUES (%s, %s, %s, %s)
             ON CONFLICT (page_hash) DO NOTHING
             """,
             (Json(count), Json(top_words), page_hash, response.url),
