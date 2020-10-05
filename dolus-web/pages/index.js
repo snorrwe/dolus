@@ -42,7 +42,7 @@ export default function Home() {
               .filter(({ counts }) => counts[word] != null)
               .map(({ created, counts }) => ({
                 primary: new Date(created),
-                secondary: counts[word] || 0,
+                secondary: counts[word],
               })),
           });
         }
@@ -82,7 +82,7 @@ function WordChart({ word, data }) {
         type: "utc",
         position: "bottom",
       },
-      { type: "linear", position: "left", hardMin: 0.0, max: 10.0 },
+      { type: "linear", position: "left", hardMin: 0.0, hardMax: 10.0 },
     ],
     []
   );
