@@ -3,7 +3,7 @@ import scrapy
 from scrapy.loader import ItemLoader
 from onrab.items import OnrabItem, WORDS
 
-from collections import defaultdict, Counter
+from collections import Counter
 import re
 import hashlib
 import os
@@ -28,7 +28,7 @@ class OnrabSpider(scrapy.Spider):
         cur = self.conn.cursor()
 
         n_orban = 0
-        count = defaultdict(lambda: 0)
+        count = {w: 0 for w in WORDS}
 
         page_hash = hashlib.sha256()
 
