@@ -69,8 +69,6 @@ export default function Home() {
 }
 
 function WordChart({ word, data }) {
-  console.log(word, data);
-
   const series = React.useMemo(
     () => ({
       showPoints: true,
@@ -81,10 +79,10 @@ function WordChart({ word, data }) {
     () => [
       {
         primary: true,
-        type: "time",
+        type: "utc",
         position: "bottom",
       },
-      { type: "linear", position: "left" },
+      { type: "linear", position: "left", hardMin: 0.0, max: 10.0 },
     ],
     []
   );
@@ -101,6 +99,7 @@ function WordChart({ word, data }) {
             tooltip
             primaryCursor
             secondaryCursor
+            focusClosest
           />
         ) : null}
       </div>
