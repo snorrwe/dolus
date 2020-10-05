@@ -42,7 +42,7 @@ export default function Home() {
               .filter(({ counts }) => counts[word] != null)
               .map(({ created, counts }) => ({
                 primary: new Date(created),
-                secondary: counts[word],
+                secondary: counts[word] || 0,
               })),
           });
         }
