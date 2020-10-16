@@ -8,7 +8,7 @@
 import scrapy
 
 
-WORDS = ["orbán", "baloldal", "fidesz", "gyurcsány", "migráns", "koronavírus", "vírus", "soros"]
+WORDS = ["orbán", "baloldal", "fidesz", "gyurcsány", "migráns", "koronavírus", "vírus", "covid", "soros györgy", "színművészeti"]
 
 
 class OnrabItem(scrapy.Item):

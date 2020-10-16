@@ -39,10 +39,9 @@ export default function Home() {
           chartDataByWord[word].push({
             label: key,
             data: data[key]
-              .filter(({ counts }) => counts[word] != null)
               .map(({ created, counts }) => ({
                 primary: new Date(created),
-                secondary: counts[word],
+                secondary: counts[word] || 0.0,
               })),
           });
         }
