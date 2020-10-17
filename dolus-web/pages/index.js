@@ -183,6 +183,19 @@ function getLineFn({ dates, series, height, margin, width }) {
   };
 }
 
+function closest(arr, val) {
+  let mind = Math.abs(arr[0] - val);
+  let mini = 0;
+  for (let i = 1; i < arr.length; ++i) {
+    const d = Math.abs(arr[i] - val);
+    if (d < mind) {
+      mind = d;
+      mini = i;
+    }
+  }
+  return mini;
+}
+
 function hover({ x, y, data }) {
   return (svg, path) => {
     function moved(event) {
@@ -190,15 +203,15 @@ function hover({ x, y, data }) {
       const pointer = d3.pointer(event, this);
       const xm = x.invert(pointer[0]);
       const ym = y.invert(pointer[1]);
-      const i = d3.bisectCenter(data.dates, xm);
+      const i = closest(data.dates, xm);
       const dt = data.dates[i];
       const s = d3.least(data.series, (d) => {
-        const closest = d3.bisectCenter(
+        const cl = closest(
           d.values.map(({ x }) => x),
           dt
         );
-        d.closestInd = closest;
-        return Math.abs(d.values[closest].y - ym);
+        d.closestInd = cl;
+        return Math.abs(d.values[cl].y - ym);
       });
       path
         .attr("stroke", (d) => (d === s ? null : "#ddd"))
