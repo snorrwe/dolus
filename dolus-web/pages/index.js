@@ -4,14 +4,7 @@ import styles from "../styles/Home.module.css";
 import * as moment from "moment";
 import * as d3 from "d3";
 
-const COLORS = [
-  "#ff0000",
-  "#00ff00",
-  "#0000ff",
-  "#f0f000",
-  "#00f0f0",
-  "#000f0f",
-];
+const COLORS = ["#F34A53", "#AAB384", "steelblue", "#437356", "#1E4147"];
 
 const WORDS = [
   "orbán",
@@ -24,6 +17,17 @@ const WORDS = [
   "soros györgy",
   "színművészeti",
 ];
+
+const COLOR_BY_URL = {};
+var nextInd = 0;
+
+function getColor(url) {
+  if (COLOR_BY_URL[url]) return COLOR_BY_URL[url];
+
+  const res = (COLOR_BY_URL[url] = COLORS[nextInd]);
+  nextInd = (nextInd + 1) % COLORS.length;
+  return res;
+}
 
 export default function Home() {
   const [data, setData] = useState(null);
@@ -51,6 +55,7 @@ export default function Home() {
         for (const url in data) {
           chartDataByWord[word].series.push({
             name: url,
+            color: getColor(url),
             values: data[url].map(({ created, counts }) => {
               created = moment.utc(created);
               dates.add(created);
@@ -84,9 +89,15 @@ export default function Home() {
   );
 }
 
+function Swatch({ data }) {
+  return data.series.map(({ name, color }) => (
+    <div style={{ backgroundColor: color }}>{name}</div>
+  ));
+}
+
 function WordChart({ word, data }) {
-  const height = 300;
-  const width = 800;
+  const height = 450;
+  const width = 1000;
   const margin = {
     bottom: 20,
     top: 20,
@@ -122,6 +133,7 @@ function WordChart({ word, data }) {
   return (
     <>
       <h2>{word}</h2>
+      <Swatch data={data} />
       <div
         className={styles.chart}
         ref={(e) => {
@@ -214,7 +226,7 @@ function hover({ x, y, data }) {
         return Math.abs(d.values[cl].y - ym);
       });
       path
-        .attr("stroke", (d) => (d === s ? null : "#ddd"))
+        .attr("stroke", (d) => (d === s ? d.color : "#ddd"))
         .filter((d) => d === s)
         .raise();
       dot.attr(
@@ -238,7 +250,7 @@ function hover({ x, y, data }) {
     }
 
     function left() {
-      path.style("mix-blend-mode", "multiply").attr("stroke", null);
+      path.style("mix-blend-mode", "multiply").attr("stroke", (d) => d.color);
       dot.attr("display", "none");
     }
     if ("ontouchstart" in document)
@@ -279,13 +291,14 @@ function getChart({ line, width, height, xAxis, yAxis, data, x, y }) {
   const path = svg
     .append("g")
     .attr("fill", "none")
-    .attr("stroke", "steelblue")
-    .attr("stroke-width", 2.0)
+    .attr("stroke-width", 3.0)
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
     .selectAll("path")
     .data(data.series)
-    .join("path")
+    .enter()
+    .append("path")
+    .attr("stroke", (d) => d.color)
     .style("mix-blend-mode", "multiply")
     .attr("d", (d) => line(d.values));
 
