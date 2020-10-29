@@ -23,8 +23,26 @@ async function fetchWords() {
   if (WORDS && WORDS.length) return WORDS;
   let words = await fetch("https://dolus.herokuapp.com/api/words");
   words = await words.json();
-  WORDS = words;
+  WORDS = words.sort();
   return WORDS;
+}
+
+/**
+ * Table of Contents
+ */
+function Toc() {
+  return (
+    <div className={styles.tocContainer}>
+      <ul>
+        {WORDS.map((w) => (
+          <li className={styles.tocItem}>
+            {" "}
+            <a href={`#${w}`}>{w}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -80,6 +98,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <Toc />
       <main className={styles.main}>
         {data
           ? WORDS.map((w) => <WordChart key={w} word={w} data={data[w]} />)
@@ -131,7 +150,7 @@ function WordChart({ word, data }) {
     yAxis,
   });
   return (
-    <>
+    <div id={word}>
       <h2>{word}</h2>
       <Swatch data={data} />
       <div
@@ -143,7 +162,7 @@ function WordChart({ word, data }) {
           }
         }}
       ></div>
-    </>
+    </div>
   );
 }
 
@@ -225,8 +244,7 @@ function hover({ x, y, data }) {
         d.closestInd = cl;
         return Math.abs(d.values[cl].y - ym);
       });
-      if (s == null)
-        return;
+      if (s == null) return;
       path
         .attr("stroke", (d) => (d === s ? d.color : "#ddd"))
         .filter((d) => d === s)
@@ -269,7 +287,7 @@ function hover({ x, y, data }) {
 
     const dot = svg.append("g").attr("display", "none");
 
-    dot.append("circle").attr("r", 2.5);
+    dot.append("circle").attr("r", 4);
 
     dot
       .append("text")
