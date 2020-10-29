@@ -33,7 +33,7 @@ RUN apt-get update
 RUN apt-get install curl libpq-dev -y
 
 COPY ./migrations/ ./migrations/
-COPY --from=build /dolus/bin/ ./
+COPY --from=build /dolus/target/release/dolus ./dolus
 
 RUN ls -al /dolus
 
