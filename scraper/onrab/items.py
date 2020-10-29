@@ -16,7 +16,7 @@ if WORDS:
 else:
     try:
         with open("words.txt") as f:
-            WORDS = list(f.readlines())
+            WORDS = list(line[:-1] for line in f.readlines())
     except FileNotFoundError:
         print("No `words.txt` file was provided", file=sys.stderr)
 

@@ -6,19 +6,7 @@ import * as d3 from "d3";
 
 const COLORS = ["#F34A53", "#AAB384", "steelblue", "#437356", "#1E4147"];
 
-const WORDS = [
-  "orbán",
-  "baloldal",
-  "fidesz",
-  "gyurcsány",
-  "migráns",
-  "koronavírus",
-  "covid",
-  "soros györgy",
-  "színművészeti",
-  "trump",
-  "biden",
-];
+var WORDS = [];
 
 const COLOR_BY_URL = {};
 var nextInd = 0;
@@ -31,6 +19,14 @@ function getColor(url) {
   return res;
 }
 
+async function fetchWords() {
+  if (WORDS && WORDS.length) return WORDS;
+  let words = await fetch("https://dolus.herokuapp.com/api/words");
+  words = await words.json();
+  WORDS = words;
+  return WORDS;
+}
+
 export default function Home() {
   const [data, setData] = useState(null);
 
@@ -39,8 +35,10 @@ export default function Home() {
       return;
     }
     (async () => {
-      const response = await fetch("https://dolus.herokuapp.com/api/counts");
+      let response = fetch("https://dolus.herokuapp.com/api/counts");
+      response = await response;
       const body = await response.json();
+      let words = await fetchWords();
       const data = body
         .map((o) => [o.url, o])
         .reduce((a, [url, body]) => {
@@ -48,11 +46,11 @@ export default function Home() {
           return a;
         }, {});
 
-      const chartDataByWord = WORDS.reduce((a, w) => {
+      const chartDataByWord = words.reduce((a, w) => {
         a[w] = { series: [], dates: new Set() };
         return a;
       }, {});
-      for (const word of WORDS) {
+      for (const word of words) {
         const dates = new Set();
         for (const url in data) {
           chartDataByWord[word].series.push({
@@ -63,7 +61,7 @@ export default function Home() {
               dates.add(created);
               return {
                 x: created,
-                y: counts[word] || 0.0,
+                y: counts[word] || null,
               };
             }),
           });
@@ -191,7 +189,7 @@ function getLineFn({ dates, series, height, margin, width }) {
     y,
     line: d3
       .line()
-      .defined((d) => d)
+      .defined((d) => d != null && d.y != null)
       .x((d, i) => x(d.x))
       .y((d) => y(d.y)),
   };
@@ -227,6 +225,8 @@ function hover({ x, y, data }) {
         d.closestInd = cl;
         return Math.abs(d.values[cl].y - ym);
       });
+      if (s == null)
+        return;
       path
         .attr("stroke", (d) => (d === s ? d.color : "#ddd"))
         .filter((d) => d === s)
