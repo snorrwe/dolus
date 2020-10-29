@@ -3,5 +3,6 @@
 !scrapy.cfg
 !requirements.txt
 !run.sh
+!words.txt
 **/__pycache__
 

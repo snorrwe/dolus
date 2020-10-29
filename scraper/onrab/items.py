@@ -6,10 +6,21 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+import os
+import sys
 
+WORDS = os.getenv("WORDS")
 
-with open ("words.txt") as f:
-    WORDS = list(f.readlines())
+if WORDS:
+    WORDS = WORDS.split(";")
+else:
+    try:
+        with open("words.txt") as f:
+            WORDS = list(f.readlines())
+    except FileNotFoundError:
+        print("No `words.txt` file was provided", file=sys.stderr)
+
+assert WORDS, "Can't start collection without a list of words"
 
 
 class OnrabItem(scrapy.Item):
