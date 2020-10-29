@@ -16,11 +16,12 @@ if WORDS:
 else:
     try:
         with open("words.txt") as f:
-            WORDS = list(line[:-1] for line in f.readlines())
+            WORDS = (line for line in f.readlines())
     except FileNotFoundError:
         print("No `words.txt` file was provided", file=sys.stderr)
 
 assert WORDS, "Can't start collection without a list of words"
+WORDS = [w.strip() for w in WORDS]
 
 
 class OnrabItem(scrapy.Item):
