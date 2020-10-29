@@ -16,6 +16,8 @@ const WORDS = [
   "covid",
   "soros györgy",
   "színművészeti",
+  "trump",
+  "biden",
 ];
 
 const COLOR_BY_URL = {};
