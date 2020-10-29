@@ -34,6 +34,23 @@ async fn get_crawled(db: PgPool) -> anyhow::Result<Vec<Crawled>> {
     .with_context(|| "fetch crawled rows")
 }
 
+async fn get_words(db: PgPool) -> anyhow::Result<Vec<String>> {
+    struct Keys {
+        keys: Option<String>,
+    }
+    sqlx::query_as!(
+        Keys,
+        r#"
+        SELECT DISTINCT json_object_keys(counts) AS keys
+        FROM crawled
+        "#
+    )
+    .fetch_all(&db)
+    .await
+    .with_context(|| "fetch crawled words")
+    .map(|keys| keys.into_iter().filter_map(|Keys { keys }| keys).collect())
+}
+
 async fn index(
     hbs: Arc<Handlebars<'_>>,
     db: PgPool,
@@ -54,6 +71,14 @@ async fn index(
 
 async fn counts(db: PgPool) -> Result<impl warp::Reply, std::convert::Infallible> {
     let values = get_crawled(db).await.unwrap();
+
+    debug!("values from db: {:#?}", values);
+
+    Ok(warp::reply::json(&values))
+}
+
+async fn words(db: PgPool) -> Result<impl warp::Reply, std::convert::Infallible> {
+    let values = get_words(db).await.unwrap();
 
     debug!("values from db: {:#?}", values);
 
@@ -94,13 +119,17 @@ async fn main() {
         .and(warp::path!("api" / "counts"))
         .and(db_pool())
         .and_then(counts);
+    let words = warp::get()
+        .and(warp::path!("api" / "words"))
+        .and(db_pool())
+        .and_then(words);
 
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_owned());
     let port = port.parse().unwrap();
 
     let cors = warp::cors().allow_any_origin().allow_methods(vec!["GET"]);
 
-    let filters = counts.or(index).with(cors);
+    let filters = words.or(counts).or(index).with(cors);
 
     warp::serve(filters).run(([0, 0, 0, 0], port)).await;
 }

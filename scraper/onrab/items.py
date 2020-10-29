@@ -8,20 +8,8 @@
 import scrapy
 
 
-WORDS = [
-    "orbán",
-    "baloldal",
-    "fidesz",
-    "gyurcsány",
-    "migráns",
-    "koronavírus",
-    "vírus",
-    "covid",
-    "soros györgy",
-    "színművészeti",
-    "trump",
-    "biden",
-]
+with open ("words.txt") as f:
+    WORDS = list(f.readlines())
 
 
 class OnrabItem(scrapy.Item):
