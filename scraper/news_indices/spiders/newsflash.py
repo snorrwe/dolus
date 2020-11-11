@@ -13,8 +13,8 @@ import psycopg2
 from psycopg2.extras import Json
 
 
-class IndexSpider(scrapy.Spider):
-    name = "news_indices"
+class NewsflashSpider(scrapy.Spider):
+    name = "newsflash"
     allowed_domains = ["telex.hu", "index.hu", "origo.hu", "portfolio.hu"]
     start_urls = [
         "https://telex.hu/",

@@ -4,7 +4,7 @@ set -e
 
 timer="60"
 for (( ; ; )) do
-  scrapy crawl news_indices
+  scrapy crawl newsflash
   echo "Sleeping for $timer seconds"
   sleep $timer
 done
