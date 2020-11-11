@@ -8,23 +8,24 @@
 import scrapy
 import os
 import sys
+import json
 
 WORDS = os.getenv("WORDS")
 
-if WORDS:
-    WORDS = WORDS.split(";")
-else:
-    try:
-        with open("words.txt") as f:
-            WORDS = (line for line in f.readlines())
-    except FileNotFoundError:
-        print("No `words.txt` file was provided", file=sys.stderr)
+try:
+    with open("words.json") as f:
+        WORDS =json.load(f)
+except FileNotFoundError:
+    print("No `words.json` file was provided", file=sys.stderr)
 
 assert WORDS, "Can't start collection without a list of words"
-WORDS = [w.strip() for w in WORDS]
 
 
-class OnrabItem(scrapy.Item):
+class IndexItem(scrapy.Item):
+    """
+    Items scraped from the index page of a news site
+    """
+
     count = scrapy.Field()
     top_words = scrapy.Field()
     url = scrapy.Field()

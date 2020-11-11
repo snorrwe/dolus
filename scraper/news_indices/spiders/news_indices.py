@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from scrapy.loader import ItemLoader
-from onrab.items import OnrabItem, WORDS
+from news_indices.items import IndexItem, WORDS
 
 from collections import Counter
 import re
@@ -13,8 +13,8 @@ import psycopg2
 from psycopg2.extras import Json
 
 
-class OnrabSpider(scrapy.Spider):
-    name = "onrab"
+class IndexSpider(scrapy.Spider):
+    name = "news_indices"
     allowed_domains = ["telex.hu", "index.hu", "origo.hu", "portfolio.hu"]
     start_urls = [
         "https://telex.hu/",
@@ -37,10 +37,12 @@ class OnrabSpider(scrapy.Spider):
         word_count = Counter()
 
         for item in response.css("::text").getall():
-            item = item.lower()
             sentence = re.split("\s+", item)
             word_count.update((w for w in sentence if len(w) > 3))
             for word in WORDS:
+                if word.get("ignoreCase", False):
+                    sentence = sentence.lower()
+                    word = word.lower()
                 if word in sentence:
                     page_hash.update(item.encode())
                     count[word] += 1
@@ -49,7 +51,7 @@ class OnrabSpider(scrapy.Spider):
 
         top_words = dict(word_count.most_common(20))
 
-        il = ItemLoader(item=OnrabItem())
+        il = ItemLoader(item=IndexItem())
         il.add_value("count", dict(count))
         il.add_value("top_words", top_words)
         il.add_value("url", response.url)

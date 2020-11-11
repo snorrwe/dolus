@@ -1,0 +1,16 @@
+[
+    { "word": "Orbán" },
+    { "word": "baloldal", "ignoreCase": true },
+    { "word": "FIDESZ", "ignoreCase": true },
+    { "word": "Gyurcsány" },
+    { "word": "migráns", "ignoreCase": true },
+    { "word": "koronavírus", "ignoreCase": true },
+    { "word": "vírus", "ignoreCase": true },
+    { "word": "covid", "ignoreCase": true },
+    { "word": "Soros" },
+    { "word": "eqyetem" },
+    { "word": "színművészeti", "ignoreCase": true },
+    { "word": "Trump" },
+    { "word": "Biden" },
+    { "word": "liberális", "ignoreCase": true }
+]

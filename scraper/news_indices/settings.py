@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for onrab project
+# Scrapy settings for news_indices project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,14 +9,14 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'onrab'
+BOT_NAME = 'news_indices'
 
-SPIDER_MODULES = ['onrab.spiders']
-NEWSPIDER_MODULE = 'onrab.spiders'
+SPIDER_MODULES = ['news_indices.spiders']
+NEWSPIDER_MODULE = 'news_indices.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'onrab (+http://www.yourdomain.com)'
+#USER_AGENT = 'news_indices (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -47,13 +47,13 @@ ROBOTSTXT_OBEY = True
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'onrab.middlewares.OnrabSpiderMiddleware': 543,
+#    'news_indices.middlewares.OnrabSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'onrab.middlewares.OnrabDownloaderMiddleware': 543,
+#    'news_indices.middlewares.OnrabDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
@@ -65,7 +65,7 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    'onrab.pipelines.OnrabPipeline': 300,
+#    'news_indices.pipelines.OnrabPipeline': 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
