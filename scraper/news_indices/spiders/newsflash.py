@@ -28,7 +28,7 @@ class NewsflashSpider(scrapy.Spider):
         cur = self.conn.cursor()
 
         n_orban = 0
-        count = {w: 0 for w in WORDS}
+        count = {w["word"]: 0 for w in WORDS}
 
         page_hash = hashlib.sha256()
 
@@ -37,18 +37,22 @@ class NewsflashSpider(scrapy.Spider):
         word_count = Counter()
 
         for item in response.css("::text").getall():
+            page_hash.update(item.encode())
             sentence = re.split("\s+", item)
             word_count.update((w for w in sentence if len(w) > 3))
             for word in WORDS:
-                if word.get("ignoreCase", False):
-                    sentence = sentence.lower()
+                ic = word.get("ignoreCase", False)
+                word = word["word"]
+                if ic:
                     word = word.lower()
-                if word in sentence:
-                    page_hash.update(item.encode())
-                    count[word] += 1
+                for sw in sentence:
+                    sw = sw.strip()
+                    if ic:
+                        sw = sw.lower()
+                    if sw.strip() == word:
+                        count[word] += 1
 
         page_hash = str(page_hash.hexdigest())
-
         top_words = dict(word_count.most_common(20))
 
         il = ItemLoader(item=IndexItem())
