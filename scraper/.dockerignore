@@ -1,8 +1,8 @@
 *
-!onrab/
+!news_indices/
 !scrapy.cfg
 !requirements.txt
 !run.sh
-!words.txt
+!words.json
 **/__pycache__
 
