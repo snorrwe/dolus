@@ -45,6 +45,11 @@ impl DolusChartPainter {
         self.word.clone()
     }
 
+    #[wasm_bindgen(js_name = "numberOfItems")]
+    pub fn number_of_items(&self) -> usize {
+        self.count.by_url.iter().map(|(_, c)| c.len()).sum()
+    }
+
     #[wasm_bindgen]
     pub fn draw(&mut self, canvas_id: String) -> Result<(), JsValue> {
         if self.labels.len() < 2 {

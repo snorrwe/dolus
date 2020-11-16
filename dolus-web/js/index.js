@@ -10,6 +10,11 @@ import("../pkg/index.js")
       return mod
         .fetch_data(w, `https://dolus.herokuapp.com/api/counts?word=${w}`)
         .then((painter) => {
+          console.log(
+            `Painting ${painter.numberOfItems()} items from word ${w}`
+          );
+          const key = `draw ${w}`;
+          console.time(key);
           const el = document.createElement("CANVAS");
           el.classList.add("chart");
           el.setAttribute("width", 1500);
@@ -22,6 +27,7 @@ import("../pkg/index.js")
           } catch (err) {
             console.error("Failed to draw", w, err);
           }
+          console.timeEnd(key);
         });
     });
     return Promise.all(pms);
