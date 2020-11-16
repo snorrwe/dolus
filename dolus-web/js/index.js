@@ -1,3 +1,4 @@
+console.time("main");
 import("../pkg/index.js")
   .then((mod) =>
     fetch("https://dolus.herokuapp.com/api/words")
@@ -6,7 +7,7 @@ import("../pkg/index.js")
   )
   .then(([mod, words]) => {
     const pms = words.sort().map((w) => {
-      mod
+      return mod
         .fetch_data(w, `https://dolus.herokuapp.com/api/counts?word=${w}`)
         .then((painter) => {
           const el = document.createElement("CANVAS");
@@ -25,4 +26,5 @@ import("../pkg/index.js")
     });
     return Promise.all(pms);
   })
+  .then(() => console.timeEnd("main"))
   .catch(console.error);
