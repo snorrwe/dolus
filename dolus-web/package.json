@@ -1,19 +1,18 @@
 {
-  "name": "dolus-web",
+  "author": "You <you@example.com>",
+  "name": "rust-webpack-template",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "export": "next build && next export"
+    "build": "rimraf dist pkg && webpack",
+    "start": "rimraf dist pkg && webpack-dev-server --open -d",
+    "test": "cargo test && wasm-pack test --headless"
   },
-  "dependencies": {
-    "d3": "^6.2.0",
-    "moment": "^2.29.1",
-    "next": "9.5.3",
-    "performance-now": "^2.1.0",
-    "react": "16.13.1",
-    "react-dom": "16.13.1"
+  "devDependencies": {
+    "@wasm-tool/wasm-pack-plugin": "^1.1.0",
+    "copy-webpack-plugin": "^5.0.3",
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.3",
+    "webpack-dev-server": "^3.7.1",
+    "rimraf": "^3.0.0"
   }
 }

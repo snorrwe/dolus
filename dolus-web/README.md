@@ -1,30 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## How to install
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
+```sh
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How to run in debug mode
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+```sh
+# Builds the project and opens it in a new browser tab. Auto-reloads when the project changes.
+npm start
+```
 
-## Learn More
+## How to build in release mode
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+# Builds the project and places it into the `dist` folder.
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How to run unit tests
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```sh
+# Runs tests in Firefox
+npm test -- --firefox
 
-## Deploy on Vercel
+# Runs tests in Chrome
+npm test -- --chrome
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Runs tests in Safari
+npm test -- --safari
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## What does each file do?
+
+* `Cargo.toml` contains the standard Rust metadata. You put your Rust dependencies in here. You must change this file with your details (name, description, version, authors, categories)
+
+* `package.json` contains the standard npm metadata. You put your JavaScript dependencies in here. You must change this file with your details (author, name, version)
+
+* `webpack.config.js` contains the Webpack configuration. You shouldn't need to change this, unless you have very special needs.
+
+* The `js` folder contains your JavaScript code (`index.js` is used to hook everything into Webpack, you don't need to change it).
+
+* The `src` folder contains your Rust code.
+
+* The `static` folder contains any files that you want copied as-is into the final build. It contains an `index.html` file which loads the `index.js` file.
+
+* The `tests` folder contains your Rust unit tests.
