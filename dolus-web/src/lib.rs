@@ -17,16 +17,15 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(serde::Deserialize, Debug)]
 struct DolusCountResponse {
-    created: String,
     url: String,
-    counts: HashMap<String, u64>,
+    payload: Vec<(String, u64)>,
 }
 
 #[wasm_bindgen]
-pub struct DolusCounts {
+pub struct DolusChartPainter {
+    word: String,
     labels: Vec<NaiveDateTime>,
-    count_by_word: HashMap<String, CountByUrl>,
-
+    count: CountByUrl,
     color_by_url: HashMap<String, ShapeStyle>,
 }
 
@@ -40,38 +39,33 @@ fn map_err_to_js<T: Debug + 'static>(prefix: impl AsRef<str>) -> impl FnOnce(T) 
 }
 
 #[wasm_bindgen]
-impl DolusCounts {
-    #[wasm_bindgen(js_name=getWords)]
-    pub fn get_words(&self) -> JsValue {
-        let res: Vec<_> = self.count_by_word.keys().cloned().collect();
-        JsValue::from_serde(&res).unwrap()
+impl DolusChartPainter {
+    #[wasm_bindgen]
+    pub fn word(&self) -> String {
+        self.word.clone()
     }
 
     #[wasm_bindgen]
-    pub fn draw(&mut self, key: String, canvas_id: String) -> Result<(), JsValue> {
+    pub fn draw(&mut self, canvas_id: String) -> Result<(), JsValue> {
         if self.labels.len() < 2 {
             return Err(map_err_to_js("need at least 2 entries")(()));
         }
-        let count = self
-            .count_by_word
-            .get(&key)
-            .ok_or_else(|| JsValue::from_str("Key not found"))?;
 
         let backend = CanvasBackend::new(canvas_id.as_str())
             .ok_or_else(|| JsValue::from_str("cannot find canvas"))?;
         let root = backend.into_drawing_area();
-        let font: FontDesc = ("sans-serif", 18.0).into();
+        let font: FontDesc = ("sans-serif", 25.0).into();
 
         root.fill(&WHITE).map_err(map_err_to_js("fill"))?;
 
         let mut chart = ChartBuilder::on(&root)
             .margin(20)
-            .caption(key.clone(), font)
+            .caption(self.word.clone(), font)
             .x_label_area_size(30)
             .y_label_area_size(30)
             .build_cartesian_2d(
                 self.labels[0].timestamp()..self.labels.last().unwrap().timestamp(),
-                0..count.max_value,
+                0..self.count.max_value,
             )
             .map_err(map_err_to_js("build"))?;
 
@@ -79,7 +73,7 @@ impl DolusCounts {
             .configure_mesh()
             .disable_y_mesh()
             .x_labels(5)
-            .y_labels((count.max_value as usize / 3).max(3))
+            .y_labels((self.count.max_value as usize / 3).max(3))
             .x_label_formatter(&|x| {
                 NaiveDateTime::from_timestamp(*x, 0)
                     .format("%Y-%m-%d %H:%M")
@@ -88,7 +82,7 @@ impl DolusCounts {
             .draw()
             .map_err(map_err_to_js("configure mesh"))?;
 
-        for (i, (url, count)) in count.by_url.iter().enumerate() {
+        for (i, (url, count)) in self.count.by_url.iter().enumerate() {
             chart
                 .draw_series(
                     LineSeries::new(
@@ -97,29 +91,32 @@ impl DolusCounts {
                             .entry(url.clone())
                             .or_insert_with(|| {
                                 plotters::style::RGBColor(
-                                    (((i + 3) * 75) & 255) as u8,
-                                    (((i + 7) * 50) & 255) as u8,
-                                    (((i + 13) * 25) & 255) as u8,
+                                    (((i * 3) * 75) & 225) as u8,
+                                    (((i * 7) * 50) & 225) as u8,
+                                    (((i * 13) * 25) & 225) as u8,
                                 )
                                 .filled()
                             })
                             .stroke_width(3),
                     )
-                    .point_size(5),
+                    .point_size(3),
                 )
                 .map_err(map_err_to_js("draw series"))?
                 .label(url.clone())
                 .legend({
                     let url = url.clone();
-                    let color = self.color_by_url[url.as_str()].clone();
+                    let color = self.color_by_url[url.as_str()].stroke_width(50);
                     move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color.clone())
                 });
         }
 
+        let font: FontDesc = ("sans-serif", 15.0).into();
+
         chart
             .configure_series_labels()
             .margin(5)
-            .background_style(&WHITE.mix(0.8))
+            .label_font(font)
+            .background_style(&WHITE.mix(0.9))
             .border_style(&BLACK)
             .draw()
             .map_err(map_err_to_js("failed to draw legend"))?;
@@ -131,7 +128,7 @@ impl DolusCounts {
 }
 
 #[wasm_bindgen]
-pub async fn fetch_data(url: String) -> Result<DolusCounts, JsValue> {
+pub async fn fetch_data(word: String, url: String) -> Result<DolusChartPainter, JsValue> {
     console_error_panic_hook::set_once();
 
     let mut opts = RequestInit::new();
@@ -154,33 +151,30 @@ pub async fn fetch_data(url: String) -> Result<DolusCounts, JsValue> {
 
     let data: Vec<DolusCountResponse> = json.into_serde().expect("Failed to parse response");
 
-    let mut res = DolusCounts {
+    let mut res = DolusChartPainter {
+        word,
         labels: Vec::with_capacity(data.len()),
-        count_by_word: HashMap::new(),
-        color_by_url: HashMap::new(),
+        count: CountByUrl {
+            max_value: 0,
+            by_url: HashMap::with_capacity(16),
+        },
+        color_by_url: HashMap::with_capacity(16),
     };
 
     for datum in data {
-        let created =
-            NaiveDateTime::parse_from_str(datum.created.as_str(), "%Y-%m-%dT%H:%M:%S.%fZ")
+        let url = &datum.url;
+        for (created, count) in datum.payload {
+            let created = NaiveDateTime::parse_from_str(created.as_str(), "%Y-%m-%dT%H:%M:%S.%fZ")
                 .expect("Failed to parse `created`");
-        res.labels.push(created);
-
-        let url = datum.url.clone();
-        let inserter = move || CountByUrl {
-            max_value: 0,
-            by_url: HashMap::new(),
-        };
-        for (k, v) in datum.counts {
-            let by_url = res.count_by_word.entry(k).or_insert_with(inserter.clone());
-            by_url
+            res.labels.push(created);
+            if res.count.max_value < count {
+                res.count.max_value = count;
+            }
+            res.count
                 .by_url
                 .entry(url.clone())
-                .or_insert_with(Vec::new)
-                .push((created.clone(), v));
-            if v > by_url.max_value {
-                by_url.max_value = v;
-            }
+                .or_insert_with(|| Vec::with_capacity(1024))
+                .push((created, count));
         }
     }
 
