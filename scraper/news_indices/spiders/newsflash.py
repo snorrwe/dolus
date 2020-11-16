@@ -21,6 +21,7 @@ class NewsflashSpider(scrapy.Spider):
         "https://index.hu",
         "https://origo.hu",
         "https://www.portfolio.hu/",
+        "https://www.szeretlekmagyarorszag.hu/",
     ]
     conn = psycopg2.connect(os.environ.get("DATABASE_URL", None))
 
