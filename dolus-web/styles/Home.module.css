@@ -16,11 +16,6 @@
   align-items: center;
 }
 
-.chart {
-  width: 50vw;
-  height: 45vh;
-}
-
 .tocContainer {
   border: 1px solid #aaa;
   display: table;
