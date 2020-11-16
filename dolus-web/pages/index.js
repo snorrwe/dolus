@@ -3,7 +3,7 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import * as moment from "moment";
 
-import WordChart from "../components/WordChart"
+import WordChart from "../components/WordChart";
 
 const COLORS = ["#F34A53", "#AAB384", "steelblue", "#437356", "#1E4147"];
 
@@ -46,6 +46,44 @@ function Toc() {
   );
 }
 
+async function fetchData(url) {
+  let response = fetch("https://dolus.herokuapp.com/api/counts");
+  response = await response;
+  const body = await response.json();
+  let words = await fetchWords();
+  const data = body
+    .map((o) => [o.url, o])
+    .reduce((a, [url, body]) => {
+      a[url] = a[url] ? [...a[url], body] : [body];
+      return a;
+    }, {});
+
+  const chartDataByWord = words.reduce((a, w) => {
+    a[w] = { series: [], dates: new Set() };
+    return a;
+  }, {});
+  for (const word of words) {
+    const dates = new Set();
+    for (const url in data) {
+      chartDataByWord[word].series.push({
+        name: url,
+        color: getColor(url),
+        values: data[url].map(({ created, counts }) => {
+          created = moment.utc(created);
+          dates.add(created);
+          return {
+            x: created,
+            y: counts[word] || null,
+          };
+        }),
+      });
+    }
+    chartDataByWord[word].dates = [...dates];
+    chartDataByWord[word].dates.sort((a, b) => b - a);
+  }
+  return chartDataByWord;
+}
+
 export default function Home() {
   const [data, setData] = useState(null);
 
@@ -54,40 +92,7 @@ export default function Home() {
       return;
     }
     (async () => {
-      let response = fetch("https://dolus.herokuapp.com/api/counts");
-      response = await response;
-      const body = await response.json();
-      let words = await fetchWords();
-      const data = body
-        .map((o) => [o.url, o])
-        .reduce((a, [url, body]) => {
-          a[url] = a[url] ? [...a[url], body] : [body];
-          return a;
-        }, {});
-
-      const chartDataByWord = words.reduce((a, w) => {
-        a[w] = { series: [], dates: new Set() };
-        return a;
-      }, {});
-      for (const word of words) {
-        const dates = new Set();
-        for (const url in data) {
-          chartDataByWord[word].series.push({
-            name: url,
-            color: getColor(url),
-            values: data[url].map(({ created, counts }) => {
-              created = moment.utc(created);
-              dates.add(created);
-              return {
-                x: created,
-                y: counts[word] || null,
-              };
-            }),
-          });
-        }
-        chartDataByWord[word].dates = [...dates];
-        chartDataByWord[word].dates.sort((a, b) => b - a);
-      }
+      const chartDataByWord = await fetchData;
       setData(chartDataByWord);
     })();
   }, [data, setData]);
@@ -108,4 +113,3 @@ export default function Home() {
     </div>
   );
 }
-
