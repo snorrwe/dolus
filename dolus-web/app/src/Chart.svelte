@@ -11,11 +11,9 @@
 
 	loadWords()
 		.then(w => {
-			const c = document.getElementById("dolus-chart");
+			let c = document.getElementById("dolus-chart");
 			c.width  =  window.innerWidth  / 2;
 			c.height =  window.innerHeight / 2;
-
-			console.log(c, c.parentElement);
 
 			wordList = w.sort();
 			selected = wordList[0]
@@ -54,6 +52,19 @@
 		<h2> {selected || ""} </h2>
 
 		<table>
+			<thead>
+				<tr>
+					<td>
+						URL
+					</td>
+					<td>
+						Date-time
+					</td>
+					<td>
+						Count
+					</td>
+				</tr>
+			</thead>
 			<tbody>
 				{#each Object.keys(chartValues).sort() as key}
 					<tr>
