@@ -38,25 +38,9 @@ fn map_err_to_js<T: Debug + 'static>(prefix: impl AsRef<str>) -> impl FnOnce(T) 
     move |err: T| JsValue::from_str(&format!("{} {:?}", prefix.as_ref(), err))
 }
 
-#[wasm_bindgen]
 impl DolusChartPainter {
-    #[wasm_bindgen]
-    pub fn word(&self) -> String {
-        self.word.clone()
-    }
-
-    #[wasm_bindgen(js_name = "numberOfItems")]
-    pub fn number_of_items(&self) -> usize {
-        self.count.by_url.iter().map(|(_, c)| c.len()).sum()
-    }
-
-    /// @param `x_pos` should be normalized, in interval [0, 1]
-    /// @return Dictionary of urls and [datetime, value, normalized_x_coordinate, normalized_y_coordinate] tuples
-    #[wasm_bindgen(js_name = "getClosest")]
-    pub fn get_closest(&self, x_pos: f64) -> JsValue {
-        if self.labels.len() < 2 {
-            return JsValue::NULL;
-        }
+    /// return url, timestamp, value tuples
+    fn get_closest_values(&self, x_pos: f64) -> impl Iterator<Item = (&str, NaiveDateTime, u64)> {
         let minx = self.labels.first().unwrap().timestamp();
         let maxx = self.labels.last().unwrap().timestamp();
         let dist = maxx - minx;
@@ -71,31 +55,45 @@ impl DolusChartPainter {
 
         let target_time = match self.labels.get(ind) {
             Some(dt) => dt.timestamp(),
-            None => {
-                return JsValue::NULL;
-            }
+            None => 0,
         };
 
-        let maxval = self.count.max_value as f64;
+        self.count.by_url.iter().filter_map(move |(url, count)| {
+            count
+                .iter()
+                .min_by_key(|(t, _)| (t.timestamp() - target_time).abs())
+                .map(|(t, val)| {
+                    let val = *val;
+                    let t = *t;
+                    (url.as_str(), t, val)
+                })
+        })
+    }
+}
+
+#[wasm_bindgen]
+impl DolusChartPainter {
+    #[wasm_bindgen]
+    pub fn word(&self) -> String {
+        self.word.clone()
+    }
+
+    #[wasm_bindgen(js_name = "numberOfItems")]
+    pub fn number_of_items(&self) -> usize {
+        self.count.by_url.iter().map(|(_, c)| c.len()).sum()
+    }
+
+    /// @param `x_pos` should be normalized, in interval [0, 1]
+    /// @return Dictionary of urls and [datetime, value] tuples
+    #[wasm_bindgen(js_name = "getClosest")]
+    pub fn get_closest(&self, x_pos: f64) -> JsValue {
+        if self.labels.len() < 2 {
+            return JsValue::NULL;
+        }
 
         let res = self
-            .count
-            .by_url
-            .iter()
-            .filter_map(|(url, count)| {
-                count
-                    .iter()
-                    .min_by_key(|(t, _)| (t.timestamp() - target_time).abs())
-                    .map(|(t, val)| {
-                        let val = *val;
-                        let y_norm = val as f64 / maxval;
-                        let x_norm = (t.timestamp() - minx) as f64 / dist as f64;
-                        (
-                            url,
-                            (t.format("%Y-%m-%d %H:%M").to_string(), val, x_norm, y_norm),
-                        )
-                    })
-            })
+            .get_closest_values(x_pos)
+            .map(|(url, ts, val)| (url, (ts.format("%Y-%m-%d %H:%M").to_string(), val)))
             .collect::<HashMap<_, _>>();
 
         JsValue::from_serde(&res).unwrap()
@@ -147,9 +145,9 @@ impl DolusChartPainter {
                             .entry(url.clone())
                             .or_insert_with(|| {
                                 plotters::style::RGBColor(
-                                    (((i * 3) * 75) & 225) as u8,
-                                    (((i * 7) * 50) & 225) as u8,
-                                    (((i * 13) * 25) & 225) as u8,
+                                    (((i * 3) * 75) & 225).max(20) as u8,
+                                    (((i * 7) * 50) & 225).max(20) as u8,
+                                    (((i * 13) * 25) & 225).max(20) as u8,
                                 )
                                 .filled()
                             })

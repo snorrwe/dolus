@@ -2,6 +2,7 @@
 	let selected;
 	let wordList = [];
 	let loading = false;
+	let mouseX = null;
 	let chartValues = {};
 
 	import {loadWords, draw, closestValues} from "./charts.js";
@@ -27,7 +28,7 @@
 	const onMoved = (w) => (event) => {
 		let actualRect = event.target.getBoundingClientRect();
 		let logicX = event.offsetX / actualRect.width;
-			/* let logicY = event.offsetY / actualRect.height; */
+		mouseX = logicX;
 		try{
 			let res = closestValues({word:w, x:logicX});
 			chartValues = res;
