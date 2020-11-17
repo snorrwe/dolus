@@ -43,7 +43,7 @@ class NewsflashSpider(scrapy.Spider):
             word_count.update((w for w in sentence if len(w) > 3))
             for word in WORDS:
                 ic = word.get("ignoreCase", False)
-                word = word["word"]
+                word = word["word"].strip()
                 if ic:
                     word = word.lower()
                 for sw in sentence:
