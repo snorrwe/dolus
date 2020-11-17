@@ -4,10 +4,19 @@
 	let loading = false;
 	let mouseX = null;
 	let chartValues = {};
+	let isDrawing = false;
 
 	import {loadWords, draw, closestValues} from "./charts.js";
 
-	$: chartCalc = draw("dolus-chart", selected);
+	$: chartCalc = (() => {
+		isDrawing = true;
+		try {
+			draw({chartId:"dolus-chart", word:selected, mouseX});
+		}catch (err){
+			console.error("Failed to draw", err);
+		}
+		isDrawing = false;
+	})();
 
 	loadWords()
 		.then(w => {
@@ -24,6 +33,9 @@
 	};
 
 	const onMoved = (w) => (event) => {
+		if (isDrawing) {
+			return;
+		}
 		let actualRect = event.target.getBoundingClientRect();
 		let logicX = event.offsetX / actualRect.width;
 		mouseX = logicX;
@@ -108,5 +120,12 @@
 		width: 66vw;
 		height: 50vh;
 		padding-left: 20px;
+	}
+
+	table { border-collapse: collapse; }
+	tr { border: none; }
+	td {
+	  border-right: solid 1px #f00; 
+	  border-left: solid 1px #f00;
 	}
 </style>

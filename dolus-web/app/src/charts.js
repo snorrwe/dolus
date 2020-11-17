@@ -8,7 +8,7 @@ dolusImport = (async () => {
     return await wasm();
 })();
 
-export async function draw(chartId, word, forceFetch = false) {
+export async function draw({ chartId, word, mouseX, forceFetch = false }) {
     const dolus = await dolusImport;
     if (!word) return;
 
@@ -23,9 +23,7 @@ export async function draw(chartId, word, forceFetch = false) {
         painter = painters[word];
     }
 
-    painter.draw(chartId);
-
-    console.log(painter.getClosest(0.5));
+    painter.draw(chartId, mouseX);
 
     return painter;
 }

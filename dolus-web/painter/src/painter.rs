@@ -76,8 +76,9 @@ impl DolusChartPainter {
         JsValue::from_serde(&res).unwrap()
     }
 
+    /// @param x_pos should be normalized to the canvas, in interval [0, 1.0]
     #[wasm_bindgen]
-    pub fn draw(&mut self, canvas_id: String) -> Result<(), JsValue> {
+    pub fn draw(&mut self, canvas_id: String, x_pos: Option<f32>) -> Result<(), JsValue> {
         if self.labels.len() < 2 {
             return Err(map_err_to_js("need at least 2 entries")(()));
         }
@@ -143,14 +144,37 @@ impl DolusChartPainter {
 
         let font: FontDesc = ("sans-serif", 15.0).into();
 
-        chart
-            .configure_series_labels()
-            .margin(5)
-            .label_font(font)
-            .background_style(&WHITE.mix(0.9))
-            .border_style(&BLACK)
-            .draw()
-            .map_err(map_err_to_js("failed to draw legend"))?;
+        let dot_and_label = |x: i32, y: i32, dt: NaiveDateTime, val: u64, url: &str| {
+            let color = &self.color_by_url[url];
+            EmptyElement::at((x, y))
+                + Circle::new((0, 0), 4, ShapeStyle::from(color.stroke_width(5)).filled())
+                + Text::new(
+                    format!("({} {} {})", url, dt.format("%Y-%m-%d %H:%M"), val),
+                    (10, 0),
+                    ("sans-serif", 18.0).into_font(),
+                )
+        };
+
+        (|| {
+            let x_pos = x_pos?;
+
+            for (url, dt, val) in self.get_closest_values(x_pos as f64) {
+                let (x, y): (i32, i32) = chart.backend_coord(&(dt.timestamp(), val));
+                root.draw(&dot_and_label(x, y, dt, val, url)).unwrap();
+            }
+
+            Some(())
+        })()
+        .unwrap_or(());
+
+        // chart
+        //     .configure_series_labels()
+        //     .margin(5)
+        //     .label_font(font)
+        //     .background_style(&WHITE.mix(0.9))
+        //     .border_style(&BLACK)
+        //     .draw()
+        //     .map_err(map_err_to_js("failed to draw legend"))?;
 
         root.present().map_err(map_err_to_js("present"))?;
 
