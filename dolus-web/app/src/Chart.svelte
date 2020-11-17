@@ -10,6 +10,12 @@
 
 	loadWords()
 		.then(w => {
+			const c = document.getElementById("dolus-chart");
+			c.width  =  window.innerWidth  / 2;
+			c.height =  window.innerHeight / 2;
+
+			console.log(c, c.parentElement);
+
 			wordList = w.sort();
 			selected = wordList[0]
 		});
@@ -20,7 +26,7 @@
 
 	const onMoved = (w) => (event) => {
 		let actualRect = event.target.getBoundingClientRect();
-		let logicX = event.offsetX/ actualRect.width;
+		let logicX = event.offsetX / actualRect.width;
 			/* let logicY = event.offsetY / actualRect.height; */
 		try{
 			let res = closestValues({word:w, x:logicX});
@@ -43,6 +49,7 @@
 
 	<div>
 
+		<div>
 		<h2> {selected || ""} </h2>
 
 		<table>
@@ -62,9 +69,13 @@
 				{/each}
 			</tbody>
 		</table>
+		</div>
 
-		<canvas id="dolus-chart" width=1350 height=700 on:mousemove={onMoved(selected)} />
+		<div class="data-explorer">
 
+			<canvas id="dolus-chart" on:mousemove={onMoved(selected)} />
+
+		</div>
 	</div>
 
 </div>
@@ -74,13 +85,16 @@
 		display: flex;
 		align-items: flex-start;
 		flex-wrap: wrap;
-		justify-content: space-between;
 	}
 
 	.wordListItem {
 		cursor: pointer;
 	}
 
-	canvas {
+	.data-explorer {
+		flex-grow: 1;
+		width: 66vw;
+		height: 50vh;
+		padding-left: 20px;
 	}
 </style>
