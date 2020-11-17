@@ -1,6 +1,6 @@
 # You must change these to your own details.
 [package]
-name = "dolus-web"
+name = "dolus-painter"
 version = "0.1.0"
 categories = ["wasm"]
 readme = "README.md"

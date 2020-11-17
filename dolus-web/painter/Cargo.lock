@@ -240,7 +240,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dolus-web"
+name = "dolus-painter"
 version = "0.1.0"
 dependencies = [
  "chrono",

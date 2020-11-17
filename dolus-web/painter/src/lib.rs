@@ -50,6 +50,57 @@ impl DolusChartPainter {
         self.count.by_url.iter().map(|(_, c)| c.len()).sum()
     }
 
+    /// @param `x_pos` should be normalized, in interval [0, 1]
+    /// @return Dictionary of urls and [datetime, value, normalized_x_coordinate, normalized_y_coordinate] tuples
+    #[wasm_bindgen(js_name = "getClosest")]
+    pub fn get_closest(&self, x_pos: f64) -> JsValue {
+        if self.labels.len() < 2 {
+            return JsValue::NULL;
+        }
+        let minx = self.labels.first().unwrap().timestamp();
+        let maxx = self.labels.last().unwrap().timestamp();
+        let dist = maxx - minx;
+
+        let d = dist as f64 * x_pos;
+        let p = minx + d as i64;
+
+        let ind = self
+            .labels
+            .binary_search_by_key(&p, |t| t.timestamp())
+            .unwrap_or_else(|i| i);
+
+        let target_time = match self.labels.get(ind) {
+            Some(dt) => dt.timestamp(),
+            None => {
+                return JsValue::NULL;
+            }
+        };
+
+        let maxval = self.count.max_value as f64;
+
+        let res = self
+            .count
+            .by_url
+            .iter()
+            .filter_map(|(url, count)| {
+                count
+                    .iter()
+                    .min_by_key(|(t, _)| (t.timestamp() - target_time).abs())
+                    .map(|(t, val)| {
+                        let val = *val;
+                        let y_norm = val as f64 / maxval;
+                        let x_norm = (t.timestamp() - minx) as f64 / dist as f64;
+                        (
+                            url,
+                            (t.format("%Y-%m-%d %H:%M").to_string(), val, x_norm, y_norm),
+                        )
+                    })
+            })
+            .collect::<HashMap<_, _>>();
+
+        JsValue::from_serde(&res).unwrap()
+    }
+
     #[wasm_bindgen]
     pub fn draw(&mut self, canvas_id: String) -> Result<(), JsValue> {
         if self.labels.len() < 2 {
@@ -132,7 +183,7 @@ impl DolusChartPainter {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name=fetchData)]
 pub async fn fetch_data(word: String, url: String) -> Result<DolusChartPainter, JsValue> {
     console_error_panic_hook::set_once();
 
@@ -182,6 +233,8 @@ pub async fn fetch_data(word: String, url: String) -> Result<DolusChartPainter, 
                 .push((created, count));
         }
     }
+
+    res.labels.sort();
 
     Ok(res)
 }
