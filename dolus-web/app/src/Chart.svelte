@@ -2,7 +2,6 @@
 	let selected;
 	let wordList = [];
 	let loading = false;
-	let mouseX = null;
 	let chartValues = {};
 	let isDrawing = false;
 
@@ -11,7 +10,7 @@
 	$: chartCalc = (() => {
 		isDrawing = true;
 		try {
-			draw({chartId:"dolus-chart", word:selected, mouseX});
+			draw({chartId:"dolus-chart", word:selected});
 		}catch (err){
 			console.error("Failed to draw", err);
 		}
@@ -38,7 +37,6 @@
 		}
 		let actualRect = event.target.getBoundingClientRect();
 		let logicX = event.offsetX / actualRect.width;
-		mouseX = logicX;
 		try{
 			let res = closestValues({word:w, x:logicX});
 			chartValues = res;
