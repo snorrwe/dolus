@@ -6,8 +6,8 @@ use wasm_bindgen::prelude::*;
 
 #[derive(serde::Deserialize)]
 pub struct HistogramEntry {
-    counts: Vec<(String, Option<i64>)>,
-    total: i64,
+    pub counts: Vec<(String, Option<i64>)>,
+    pub total: i64,
 }
 pub type HistogramResponse = HashMap<String, HistogramEntry>;
 
@@ -26,7 +26,7 @@ impl HistogramPainter {
             .filter_map(|(k, v)| if v.total > 0 { Some(k) } else { None })
             .cloned()
             .collect();
-        vec.sort();
+        vec.sort_by(|a, b| self.data[b].total.cmp(&self.data[a].total));
         JsValue::from_serde(&vec).unwrap()
     }
 
@@ -40,18 +40,14 @@ impl HistogramPainter {
 
         root.fill(&WHITE).map_err(map_err_to_js("fill"))?;
 
-        let urls: HashSet<_> = self
-            .data
-            .values()
-            .flat_map(|v| v.counts.iter().map(|(url, _)| url.clone()))
-            .collect();
-        let urls: Vec<_> = urls.into_iter().collect();
+        let entry = &self.data[word];
+        let urls: Vec<_> = entry.counts.iter().map(|(url, _)| url).cloned().collect();
 
         let mut chart = ChartBuilder::on(&root)
             .x_label_area_size(50)
             .y_label_area_size(50)
             .margin(5)
-            .caption(word, font)
+            .caption(format!("{} ({})", word, entry.total), font)
             .build_cartesian_2d(urls.into_segmented(), 0..20i64)
             .map_err(map_err_to_js("build chart"))?;
 
@@ -70,7 +66,7 @@ impl HistogramPainter {
                 Histogram::vertical(&chart)
                     .style(RED.mix(0.8).filled()) // TODO: color for each url
                     .data(
-                        self.data[word]
+                        entry
                             .counts
                             .iter()
                             .filter_map(move |(url, v)| v.map(|v| (url, v))),

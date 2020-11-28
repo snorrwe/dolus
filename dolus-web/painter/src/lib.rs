@@ -49,8 +49,12 @@ pub async fn fetch_histo(url: String) -> Result<HistogramPainter, JsValue> {
     // Convert this other `Promise` into a rust `Future`.
     let json = JsFuture::from(resp.json()?).await?;
 
-    let data: painter::histogram::HistogramResponse =
+    let mut data: painter::histogram::HistogramResponse =
         json.into_serde().expect("Failed to parse response");
+
+    data.values_mut().for_each(|v| {
+        v.counts.sort_by(|a, b| a.0.cmp(&b.0));
+    });
 
     let res = HistogramPainter { data };
     Ok(res)
