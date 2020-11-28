@@ -43,6 +43,7 @@ class NewsflashSpider(scrapy.Spider):
             word_count.update((w for w in sentence if len(w) > 3))
             for word in WORDS:
                 ic = word.get("ignoreCase", False)
+                suffix = word.get("allowSuffix", False)
                 word = word["word"].strip()
                 if ic:
                     word = word.lower()
@@ -50,7 +51,8 @@ class NewsflashSpider(scrapy.Spider):
                     sw = sw.strip()
                     if ic:
                         sw = sw.lower()
-                    if sw.strip() == word:
+                    sw = sw.strip()
+                    if (suffix and sw.startswith(word)) or sw == word:
                         count[word] += 1
 
         page_hash = str(page_hash.hexdigest())

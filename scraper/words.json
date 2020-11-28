@@ -1,15 +1,14 @@
 [
-    { "word": "Orbán" },
-    { "word": "baloldal", "ignoreCase": true },
-    { "word": "FIDESZ", "ignoreCase": true },
-    { "word": "Gyurcsány" },
-    { "word": "migráns", "ignoreCase": true },
-    { "word": "koronavírus", "ignoreCase": true },
-    { "word": "vírus", "ignoreCase": true },
-    { "word": "covid", "ignoreCase": true },
-    { "word": "Soros" },
-    { "word": "színművészeti", "ignoreCase": true },
-    { "word": "Trump" },
-    { "word": "Biden" },
-    { "word": "liberális", "ignoreCase": true }
+    { "word": "Orbán", "allowSuffix": true },
+    { "word": "baloldal", "ignoreCase": true, "allowSuffix": true },
+    { "word": "fidesz", "ignoreCase": true, "allowSuffix": true },
+    { "word": "Gyurcsány", "allowSuffix": true },
+    { "word": "migráns", "ignoreCase": true, "allowSuffix": true },
+    { "word": "koronavírus", "ignoreCase": true, "allowSuffix": true },
+    { "word": "vírus", "ignoreCase": true, "allowSuffix": true },
+    { "word": "covid", "ignoreCase": true, "allowSuffix": true },
+    { "word": "Soros", "allowSuffix": true },
+    { "word": "Trump", "allowSuffix": true },
+    { "word": "Biden", "allowSuffix": true },
+    { "word": "liberális", "ignoreCase": true, "allowSuffix": true }
 ]
