@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
