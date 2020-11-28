@@ -8,14 +8,14 @@ use crate::CountByUrl;
 use std::{collections::HashMap, fmt::Debug};
 
 #[wasm_bindgen]
-pub struct DolusChartPainter {
+pub struct ChartPainter {
     pub(crate) word: String,
     pub(crate) labels: Vec<NaiveDateTime>,
     pub(crate) count: CountByUrl,
     pub(crate) color_by_url: HashMap<String, ShapeStyle>,
 }
 
-impl DolusChartPainter {
+impl ChartPainter {
     /// return url, timestamp, value tuples
     fn get_closest_values(&self, x_pos: f64) -> impl Iterator<Item = (&str, NaiveDateTime, u64)> {
         let minx = self.labels.first().unwrap().timestamp();
@@ -49,7 +49,7 @@ impl DolusChartPainter {
 }
 
 #[wasm_bindgen]
-impl DolusChartPainter {
+impl ChartPainter {
     #[wasm_bindgen]
     pub fn word(&self) -> String {
         self.word.clone()
@@ -78,7 +78,7 @@ impl DolusChartPainter {
 
     /// @param x_pos should be normalized to the canvas, in interval [0, 1.0]
     #[wasm_bindgen]
-    pub fn draw(&mut self, canvas_id: String, x_pos: Option<f32>) -> Result<(), JsValue> {
+    pub fn draw(&mut self, canvas_id: String, _x_pos: Option<f32>) -> Result<(), JsValue> {
         if self.labels.len() < 2 {
             return Err(map_err_to_js("need at least 2 entries")(()));
         }

@@ -26,7 +26,11 @@ struct GroupedByUrl {
     payload: Vec<(DateTime<Utc>, u64)>,
 }
 
-type WordHistogram = Vec<(String, Option<i64>)>;
+#[derive(Serialize, Debug)]
+struct WordHistogram {
+    counts: Vec<(String, Option<i64>)>,
+    total: i64,
+}
 
 async fn get_crawled(db: PgPool) -> anyhow::Result<Vec<Crawled>> {
     sqlx::query_as!(
@@ -129,7 +133,6 @@ async fn get_current_histogram(db: PgPool) -> anyhow::Result<HashMap<String, Wor
     )
     .fetch_all(&db)
     .await?;
-    println!("boi? {:#?}", data);
 
     let output = data
         .into_iter()
@@ -140,13 +143,16 @@ async fn get_current_histogram(db: PgPool) -> anyhow::Result<HashMap<String, Wor
                 .into_iter()
                 .for_each(|(word, value)| {
                     // FFS remove these clones
-                    let count = m.entry(word.clone()).or_insert_with(Vec::new);
-                    count.push((url.clone(), value.as_i64()));
+                    let count = m.entry(word.clone()).or_insert_with(|| WordHistogram {
+                        total: 0,
+                        counts: Vec::new(),
+                    });
+                    count.counts.push((url.clone(), value.as_i64()));
                 });
+            m.values_mut()
+                .for_each(|v| v.total = v.counts.iter().filter_map(|x| x.1).sum());
             m
         });
-
-    eprintln!("{:?}", output);
 
     Ok(output)
 }
