@@ -26,6 +26,8 @@ struct GroupedByUrl {
     payload: Vec<(DateTime<Utc>, u64)>,
 }
 
+type WordHistogram = Vec<(String, Option<i64>)>;
+
 async fn get_crawled(db: PgPool) -> anyhow::Result<Vec<Crawled>> {
     sqlx::query_as!(
         Crawled,
@@ -110,6 +112,45 @@ async fn get_by_word(db: PgPool, word: String) -> anyhow::Result<Vec<GroupedByUr
     .unwrap()
 }
 
+async fn get_current_histogram(db: PgPool) -> anyhow::Result<HashMap<String, WordHistogram>> {
+    #[derive(Debug)]
+    struct Q {
+        counts: serde_json::Value,
+        url: String,
+    }
+    let data = sqlx::query_as!(
+        Q,
+        r#"
+        SELECT DISTINCT ON(url) 
+            counts, url
+        FROM crawled
+        ORDER BY url, created DESC
+        "#
+    )
+    .fetch_all(&db)
+    .await?;
+    println!("boi? {:#?}", data);
+
+    let output = data
+        .into_iter()
+        .fold(HashMap::new(), |mut m, Q { counts, url }| {
+            counts
+                .as_object()
+                .expect("Expected `counts` to be a map")
+                .into_iter()
+                .for_each(|(word, value)| {
+                    // FFS remove these clones
+                    let count = m.entry(word.clone()).or_insert_with(Vec::new);
+                    count.push((url.clone(), value.as_i64()));
+                });
+            m
+        });
+
+    eprintln!("{:?}", output);
+
+    Ok(output)
+}
+
 async fn index(hbs: Arc<Handlebars<'_>>, db: PgPool) -> Result<impl warp::Reply, Infallible> {
     let values = get_crawled(db).await.unwrap();
 
@@ -152,6 +193,11 @@ async fn counts_by_word(
 #[derive(serde::Deserialize, Debug)]
 struct WordQuery {
     word: String,
+}
+
+async fn current_histogram(db: PgPool) -> Result<impl warp::Reply, Infallible> {
+    let values = get_current_histogram(db).await.unwrap();
+    Ok(warp::reply::json(&values))
 }
 
 #[tokio::main]
@@ -199,6 +245,11 @@ async fn main() {
         .and(db_pool())
         .and_then(counts_by_word);
 
+    let current_histogram = warp::get()
+        .and(warp::path!("api" / "histo"))
+        .and(db_pool())
+        .and_then(current_histogram);
+
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_owned());
     let port = port.parse().unwrap();
 
@@ -207,6 +258,9 @@ async fn main() {
     let filters = words
         .or(count_by_words)
         .or(counts)
+        .or(current_histogram)
+        // register index last as it will match any route...
+        // TODO: 404 page?
         .or(index)
         .with(cors)
         .with(warp::log("dolus"));
