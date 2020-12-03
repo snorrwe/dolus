@@ -10,5 +10,6 @@
     { "word": "Soros", "allowSuffix": true },
     { "word": "Trump", "allowSuffix": true },
     { "word": "Biden", "allowSuffix": true },
-    { "word": "liberális", "ignoreCase": true, "allowSuffix": true }
+    { "word": "liberális", "ignoreCase": true, "allowSuffix": true },
+    { "word": "Szájer", "ignoreCase": false, "allowSuffix": true }
 ]

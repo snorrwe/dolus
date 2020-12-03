@@ -1,4 +1,4 @@
-use std::{collections::HashMap, f64::consts::E};
+use std::collections::HashMap;
 
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
@@ -48,12 +48,19 @@ impl HistogramPainter {
             .cloned()
             .collect();
 
+        let max = entry
+            .counts
+            .iter()
+            .filter_map(|(_, v)| v.clone())
+            .max()
+            .unwrap_or(0);
+
         let mut chart = ChartBuilder::on(&root)
             .x_label_area_size(50)
             .y_label_area_size(50)
             .margin(5)
             .caption(format!("{} ({})", word, entry.total), font)
-            .build_cartesian_2d(urls.into_segmented(), 0.0..1.0f64)
+            .build_cartesian_2d(urls.into_segmented(), 0..max)
             .map_err(map_err_to_js("build chart"))?;
 
         chart
@@ -61,40 +68,17 @@ impl HistogramPainter {
             .disable_x_mesh()
             .disable_y_mesh()
             .bold_line_style(&BLACK)
-            .y_desc("Eloszlás")
+            .y_desc("Darab")
             .x_desc("URL")
             .axis_desc_style(("sans-serif", 15))
             .draw()
             .map_err(map_err_to_js("configure mesh"))?;
 
-        // softmax function
-        let max = entry
-            .counts
-            .iter()
-            .filter_map(|(_, v)| v.clone())
-            .max()
-            .unwrap_or(0) as f64;
-
-        let exps = entry
-            .counts
-            .iter()
-            .filter_map(|(_, v)| v.clone())
-            .map(|x| E.powf(x as f64 - max)) // x - max will ensure that `exps` holds values in range [0, 1]
-            .collect::<Vec<_>>();
-
-        let exp_sum: f64 = exps.iter().sum();
-
         chart
             .draw_series(
                 Histogram::vertical(&chart)
                     .style(RED.mix(0.8).filled()) // TODO: color for each url
-                    .data(
-                        entry
-                            .counts
-                            .iter()
-                            .map(|(url, _)| url)
-                            .zip(exps.iter().map(|y| y / exp_sum)),
-                    ),
+                    .data(entry.counts.iter().filter_map(|(k, v)| v.map(|x| (k, x)))),
             )
             .map_err(map_err_to_js("draw"))?;
 
