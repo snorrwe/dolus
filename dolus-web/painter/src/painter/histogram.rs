@@ -78,7 +78,7 @@ impl HistogramPainter {
             .draw_series(
                 Histogram::vertical(&chart)
                     .style(RED.mix(0.8).filled()) // TODO: color for each url
-                    .data(entry.counts.iter().filter_map(|(k, v)| v.map(|x| (k, x)))),
+                    .data(entry.counts.iter().map(|(k, v)| (k, v.unwrap_or(0)))),
             )
             .map_err(map_err_to_js("draw"))?;
 
